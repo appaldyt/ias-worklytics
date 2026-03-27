@@ -125,7 +125,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
     db.commit()
     return {'message': 'User deactivated'}
 
-@router.get('/tenants/options')
+@router.get('/tenant-options')
 def tenant_options(db: Session = Depends(get_db), current_user: User = Depends(require_role('super_admin'))):
     tenants = db.query(Tenant).filter(Tenant.is_active == True).all()
     return [{'id': t.id, 'name': t.name, 'code': t.code} for t in tenants]

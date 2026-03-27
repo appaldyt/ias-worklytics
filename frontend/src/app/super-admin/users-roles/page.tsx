@@ -62,7 +62,7 @@ export default function SuperAdminUsersRolesPage() {
     try {
       const [u, t] = await Promise.all([
         axios.get<UserRow[]>('/api/admin/users'),
-        axios.get<TenantOpt[]>('/api/admin/tenants/options'),
+        axios.get<TenantOpt[]>('/api/admin/tenant-options'),
       ])
       const safeUsers = Array.isArray(u.data) ? u.data : []
       const safeTenants = Array.isArray(t.data) ? t.data : []
