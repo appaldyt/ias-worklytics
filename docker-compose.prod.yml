@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=${DATABASE_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - DEBUG=False
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - API_URL=${API_URL}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# For EasyPanel deployment:
+# Set these environment variables in EasyPanel:
+# DATABASE_URL=mysql+pymysql://Admin:Admin123@website_ias-worklytics-db:3306/ias-worklytics-db
+# FRONTEND_URL=https://your-domain.com
+# API_URL=https://your-backend-domain.com
