@@ -24,9 +24,12 @@ export default function MobileBottomNav({ role }: Props) {
   const pathname = usePathname()
 
   // Ambil max 5 item pertama agar nyaman di mobile
-  const items = sidebarConfig[role]
-    .flatMap((s) => s.items)
-    .slice(0, 5)
+  const sections = sidebarConfig[role] || []
+  const merged: typeof sections[number]['items'] = []
+  for (const section of sections) {
+    for (const item of section.items) merged.push(item)
+  }
+  const items = merged.slice(0, 5)
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t border-soft bg-white/95 backdrop-blur">

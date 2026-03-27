@@ -49,10 +49,12 @@ export default function SuperAdminUsersRolesPage() {
         axios.get<UserRow[]>('/api/admin/users'),
         axios.get<TenantOpt[]>('/api/admin/tenants/options'),
       ])
-      setUsers(u.data)
-      setTenants(t.data)
-      if (!editId && t.data.length && form.default_tenant_id === 0) {
-        setForm((v) => ({ ...v, default_tenant_id: t.data[0].id }))
+      const safeUsers = Array.isArray(u.data) ? u.data : []
+      const safeTenants = Array.isArray(t.data) ? t.data : []
+      setUsers(safeUsers)
+      setTenants(safeTenants)
+      if (!editId && safeTenants.length && form.default_tenant_id === 0) {
+        setForm((v) => ({ ...v, default_tenant_id: safeTenants[0].id }))
       }
     } catch (e: any) {
       setError(e?.response?.data?.detail || 'Gagal memuat data user/role')
