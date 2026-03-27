@@ -18,6 +18,7 @@ export default function Home() {
     const checkApiStatus = async () => {
       try {
         setLoading(true)
+        // API accessible from same domain via nginx routing
         const response = await axios.get<ApiStatus>('/api/health')
         setApiStatus(response.data)
         setError(null)

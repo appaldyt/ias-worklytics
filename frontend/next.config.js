@@ -1,18 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.API_URL 
-          ? `${process.env.API_URL}/api/:path*`
-          : 'http://localhost:8000/api/:path*', // Proxy to FastAPI
-      },
-    ]
-  },
+  // No API rewrite needed - nginx handles routing to backend
+  // Frontend and backend served from same domain
   env: {
-    API_URL: process.env.API_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   }
 }
 
