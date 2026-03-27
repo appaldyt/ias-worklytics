@@ -123,9 +123,13 @@ async def get_current_tenant(current_user: User = Depends(get_current_user)) -> 
     return current_user.tenant
 
 def require_role(required_role: str):
-    """Decorator to require specific user role"""
+    """Decorator to require specific user role.
+    super_admin bypasses all role checks.
+    """
     def role_checker(current_user: User = Depends(get_current_user)):
-        if current_user.role != required_role and current_user.role != "admin":
+        if current_user.role == "super_admin":
+            return current_user
+        if current_user.role != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Operation requires {required_role} role"

@@ -8,7 +8,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     tenant_id: int
-    role: str = "user"
+    role: str = "karyawan"
     is_active: bool = True
 
 class UserCreate(BaseModel):
@@ -17,7 +17,7 @@ class UserCreate(BaseModel):
     full_name: str
     password: str
     tenant_id: int
-    role: str = "user"
+    role: str = "karyawan"
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

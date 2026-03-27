@@ -43,15 +43,33 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     
     # Authenticate user
     user = authenticate_user(db, login_data.username, login_data.password, tenant_id)
-    
+
+    # If strict tenant login fails, try super_admin global login
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username, password, or tenant"
-        )
-    
-    # If no tenant specified, but user has tenant, use it
-    if not tenant:
+        maybe_user = authenticate_user(db, login_data.username, login_data.password, None)
+        if maybe_user and maybe_user.role == "super_admin":
+            user = maybe_user
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username, password, or tenant"
+            )
+
+    # Tenant resolution
+    if user.role == "super_admin":
+        # Super admin can enter any tenant; require tenant_code when available,
+        # otherwise fallback to user's default tenant.
+        if tenant is None and login_data.tenant_code:
+            tenant = db.query(Tenant).filter(
+                Tenant.code == login_data.tenant_code.upper(),
+                Tenant.is_active == True
+            ).first()
+            if not tenant:
+                raise HTTPException(status_code=404, detail="Tenant not found")
+        if tenant is None:
+            tenant = user.tenant
+    else:
+        # Non super admin locked to own tenant
         tenant = user.tenant
     
     # Create tokens

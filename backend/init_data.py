@@ -80,10 +80,28 @@ def init_tenants(db: Session):
     return created_tenants
 
 def init_admin_users(db: Session, tenants):
-    """Initialize admin users for each tenant"""
-    
+    """Initialize admin users for each tenant + one super admin"""
+
     created_users = []
-    
+
+    # Global super admin
+    super_admin_username = "superadmin"
+    existing_super = db.query(User).filter(User.username == super_admin_username).first()
+    if not existing_super and tenants:
+        super_admin = User(
+            username=super_admin_username,
+            email="superadmin@ias.co.id",
+            full_name="Super Administrator IAS Worklytics",
+            hashed_password=get_password_hash("superadmin123"),
+            tenant_id=tenants[0].id,
+            role="super_admin",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(super_admin)
+        created_users.append(super_admin)
+        print("✅ Created super admin user: superadmin")
+
     for tenant in tenants:
         # Create admin user for each tenant
         username = f"admin_{tenant.code.lower()}"
@@ -227,14 +245,19 @@ def main():
         print(f"📊 Created: {len(tenants)} tenants, {len(admin_users)} admin users")
         print(f"📊 Created: {len(departments)} departments, {len(employees)} employees")
         
-        print("\n🔑 Default Admin Credentials:")
+        print("\n🔑 Default Credentials:")
+        print("  • SUPER ADMIN (all tenants)")
+        print("    Username: superadmin")
+        print("    Password: superadmin123")
+        print("    Email: superadmin@ias.co.id")
+        print()
         for tenant in tenants:
             print(f"  • {tenant.name} ({tenant.code})")
             print(f"    Username: admin_{tenant.code.lower()}")
             print(f"    Password: admin123")
             print(f"    Email: admin@{tenant.subdomain}.ias.co.id")
             print()
-        
+
         print("⚠️  SECURITY WARNING: Change default passwords in production!")
         print("🌐 Access: https://your-domain.com/")
         

@@ -105,8 +105,15 @@ export default function LoginPage() {
       // Setup axios default headers
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`
 
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Redirect by role
+      const role = response.data.user.role
+      if (role === 'super_admin') {
+        router.push('/super-admin/master-data')
+      } else if (role === 'admin') {
+        router.push('/admin/master-data')
+      } else {
+        router.push('/karyawan/abk-worksheet')
+      }
 
     } catch (err: any) {
       if (err.response?.data?.detail) {
@@ -227,6 +234,7 @@ export default function LoginPage() {
               Demo Credentials (Development):
             </h3>
             <div className="text-xs text-blue-700 space-y-1">
+              <div><strong>SUPER ADMIN:</strong> superadmin / superadmin123</div>
               <div><strong>IAS:</strong> admin_ias / admin123</div>
               <div><strong>GAPURA:</strong> admin_gapura / admin123</div>
               <div><strong>IASS:</strong> admin_iass / admin123</div>

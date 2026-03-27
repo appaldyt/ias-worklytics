@@ -16,7 +16,7 @@ class User(Base):
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False)
     
     # Role and permissions
-    role = Column(String(50), default="user")  # admin, manager, user
+    role = Column(String(50), default="karyawan")  # super_admin, admin, karyawan
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     
