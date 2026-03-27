@@ -9,7 +9,7 @@ from app.core.auth import (
     authenticate_user, get_password_hash, create_access_token, 
     create_refresh_token, get_current_user, get_current_tenant
 )
-from app.models.user import User, UserSession
+from app.models.user import User, UserSession, UserTenantAccess
 from app.models.tenant import Tenant
 from app.models.employee import Employee, Department, Workload
 from app.schemas.auth import (
@@ -69,8 +69,16 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         if tenant is None:
             tenant = user.tenant
     else:
-        # Non super admin locked to own tenant
-        tenant = user.tenant
+        # Non super admin: must have access to selected tenant
+        if tenant is None:
+            tenant = user.tenant
+        if tenant.id != user.tenant_id:
+            access = db.query(UserTenantAccess).filter(
+                UserTenantAccess.user_id == user.id,
+                UserTenantAccess.tenant_id == tenant.id
+            ).first()
+            if not access:
+                raise HTTPException(status_code=403, detail="You have no access to selected tenant")
     
     # Create tokens
     token_data = {"user_id": user.id, "tenant_id": tenant.id}
@@ -171,6 +179,10 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # add default tenant access
+    db.add(UserTenantAccess(user_id=user.id, tenant_id=user.tenant_id))
+    db.commit()
     
     return UserResponse(
         id=user.id,

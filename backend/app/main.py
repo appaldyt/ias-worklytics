@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-from app.api import health, employees, auth, tenants
+from app.api import health, employees, auth, tenants, user_roles
 from app.core.database import engine
 from app.models import employee, tenant, user
 
@@ -51,6 +51,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(tenants.router, prefix="/api/admin", tags=["tenant-management"])
+app.include_router(user_roles.router, prefix="/api/admin", tags=["user-role-management"])
 app.include_router(employees.router, prefix="/api", tags=["employees"])
 
 @app.get("/")

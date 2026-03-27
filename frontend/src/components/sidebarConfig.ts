@@ -27,7 +27,7 @@ export const sidebarConfig: Record<UserRole, SidebarSection[]> = {
     {
       title: 'MASTER',
       items: [
-        { label: 'User & Role', href: '/super-admin/master-data', icon: '👥', comingSoon: true },
+        { label: 'User & Role', href: '/super-admin/users-roles', icon: '👥' },
         { label: 'Global Reference', href: '/super-admin/master-data', icon: '🧩', comingSoon: true },
       ],
     },
