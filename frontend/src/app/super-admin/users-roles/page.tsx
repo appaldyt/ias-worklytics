@@ -29,6 +29,21 @@ const emptyForm = {
   tenant_access_ids: [] as number[],
 }
 
+const toErrorText = (input: any, fallback: string) => {
+  if (!input) return fallback
+  if (typeof input === 'string') return input
+  if (Array.isArray(input)) return input.map((i) => (typeof i === 'string' ? i : JSON.stringify(i))).join(', ')
+  if (typeof input === 'object') {
+    if (typeof input.detail === 'string') return input.detail
+    try {
+      return JSON.stringify(input)
+    } catch {
+      return fallback
+    }
+  }
+  return fallback
+}
+
 export default function SuperAdminUsersRolesPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [tenants, setTenants] = useState<TenantOpt[]>([])
@@ -57,7 +72,7 @@ export default function SuperAdminUsersRolesPage() {
         setForm((v) => ({ ...v, default_tenant_id: safeTenants[0].id }))
       }
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Gagal memuat data user/role')
+      setError(toErrorText(e?.response?.data?.detail ?? e?.response?.data, 'Gagal memuat data user/role'))
     }
   }
 
@@ -103,7 +118,7 @@ export default function SuperAdminUsersRolesPage() {
       resetForm()
       await loadAll()
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Gagal menyimpan user')
+      setError(toErrorText(e?.response?.data?.detail ?? e?.response?.data, 'Gagal menyimpan user'))
     }
   }
 
@@ -128,7 +143,7 @@ export default function SuperAdminUsersRolesPage() {
       setSuccess('User dinonaktifkan')
       await loadAll()
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Gagal menonaktifkan user')
+      setError(toErrorText(e?.response?.data?.detail ?? e?.response?.data, 'Gagal menonaktifkan user'))
     }
   }
 
