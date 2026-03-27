@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import AppShell from '@/components/AppShell'
 
 export default function AdminMasterDataPage() {
   const [tenantName, setTenantName] = useState('Tenant')
@@ -16,24 +17,40 @@ export default function AdminMasterDataPage() {
   }, [])
 
   return (
-    <main className="max-w-7xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Admin - Master Data</h1>
-      <p className="text-gray-600">Anda mengelola master data untuk: {tenantName}</p>
+    <AppShell role="admin" title="Admin — Master Data" subtitle={`Kelola master data untuk ${tenantName}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="panel-card">
+          <p className="muted">Total Karyawan</p>
+          <p className="kpi-value">—</p>
+        </div>
+        <div className="panel-card">
+          <p className="muted">Departemen</p>
+          <p className="kpi-value">—</p>
+        </div>
+        <div className="panel-card">
+          <p className="muted">Template ABK</p>
+          <p className="kpi-value">—</p>
+        </div>
+        <div className="panel-card">
+          <p className="muted">Status Tenant</p>
+          <p className="text-2xl font-bold text-green-600">Active</p>
+        </div>
+      </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <section className="bg-white border rounded-lg p-4">
+        <section className="panel-card">
           <h2 className="font-semibold mb-2">Departemen</h2>
-          <p className="text-sm text-gray-600">Kelola struktur departemen tenant.</p>
+          <p className="muted">Kelola struktur departemen tenant.</p>
         </section>
-        <section className="bg-white border rounded-lg p-4">
+        <section className="panel-card">
           <h2 className="font-semibold mb-2">Karyawan</h2>
-          <p className="text-sm text-gray-600">Kelola data karyawan tenant.</p>
+          <p className="muted">Kelola data karyawan tenant.</p>
         </section>
-        <section className="bg-white border rounded-lg p-4">
+        <section className="panel-card">
           <h2 className="font-semibold mb-2">Template ABK</h2>
-          <p className="text-sm text-gray-600">Atur template kerja ABK tenant.</p>
+          <p className="muted">Atur format kertas kerja ABK tenant.</p>
         </section>
       </div>
-    </main>
+    </AppShell>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import AppShell from '@/components/AppShell'
 
 export default function KaryawanABKWorksheetPage() {
   const [userName, setUserName] = useState('Karyawan')
@@ -16,22 +17,19 @@ export default function KaryawanABKWorksheetPage() {
   }, [])
 
   return (
-    <main className="max-w-5xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Kertas Kerja ABK</h1>
-      <p className="text-gray-600">Halo {userName}, isi kertas kerja ABK Anda di sini.</p>
+    <AppShell role="karyawan" title="Kertas Kerja ABK" subtitle={`Halo ${userName}, isi aktivitas kerja Anda.`}>
+      <section className="panel-card space-y-3 max-w-3xl">
+        <label className="block text-sm font-medium text-primaryText">Nama Aktivitas</label>
+        <input className="w-full border border-soft rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Penyusunan laporan operasional" />
 
-      <section className="bg-white border rounded-lg p-4 space-y-3">
-        <label className="block text-sm font-medium">Nama Aktivitas</label>
-        <input className="w-full border rounded px-3 py-2" placeholder="Contoh: Penyusunan laporan operasional" />
+        <label className="block text-sm font-medium text-primaryText">Durasi (jam)</label>
+        <input type="number" className="w-full border border-soft rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: 2" />
 
-        <label className="block text-sm font-medium">Durasi (jam)</label>
-        <input type="number" className="w-full border rounded px-3 py-2" placeholder="Contoh: 2" />
+        <label className="block text-sm font-medium text-primaryText">Output</label>
+        <textarea className="w-full border border-soft rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" rows={4} placeholder="Hasil kerja / output aktivitas"></textarea>
 
-        <label className="block text-sm font-medium">Output</label>
-        <textarea className="w-full border rounded px-3 py-2" rows={4} placeholder="Hasil kerja / output aktivitas"></textarea>
-
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Simpan Kertas Kerja</button>
+        <button className="btn btn-primary">Simpan Kertas Kerja</button>
       </section>
-    </main>
+    </AppShell>
   )
 }
