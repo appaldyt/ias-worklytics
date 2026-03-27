@@ -70,6 +70,14 @@ export default function DashboardPage() {
       setStats(response.data)
     } catch (err) {
       console.error('Failed to load dashboard stats:', err)
+      // Session/token invalid or backend mismatch -> force re-login
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('tenant')
+      delete axios.defaults.headers.common['Authorization']
+      router.push('/login')
+      return
     } finally {
       setLoading(false)
     }
