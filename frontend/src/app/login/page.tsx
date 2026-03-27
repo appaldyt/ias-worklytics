@@ -42,7 +42,23 @@ export default function LoginPage() {
     const loadTenants = async () => {
       try {
         const response = await axios.get<Tenant[]>('/api/auth/tenants')
-        setTenants(response.data)
+        const apiTenants = response.data || []
+
+        if (apiTenants.length === 0) {
+          // API success but no tenant data initialized yet
+          const fallbackTenants: Tenant[] = [
+            { id: 1, name: "PT Integrasi Aviasi Solusi (IAS)", code: "IAS", is_active: true },
+            { id: 2, name: "PT Gapura Angkasa", code: "GAPURA", is_active: true },
+            { id: 3, name: "PT IAS Support (IASS)", code: "IASS", is_active: true },
+            { id: 4, name: "PT IAS Hospitality (IASH)", code: "IASH", is_active: true },
+            { id: 5, name: "PT IAS Property (IASP)", code: "IASP", is_active: true },
+            { id: 6, name: "PT Angkasa Pura Support (APS1)", code: "APS1", is_active: true }
+          ]
+          setTenants(fallbackTenants)
+          setError('Data tenant belum diinisialisasi di server. Menggunakan daftar default.')
+        } else {
+          setTenants(apiTenants)
+        }
       } catch (err) {
         console.error('Failed to load tenants:', err)
         // Fallback to hardcoded tenants if API fails
