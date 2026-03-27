@@ -4,9 +4,9 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-from app.api import health, employees, auth, tenants, user_roles
+from app.api import health, employees, auth, tenants, user_roles, global_reference
 from app.core.database import engine
-from app.models import employee, tenant, user
+from app.models import employee, tenant, user, global_reference as global_reference_model
 
 # Load environment variables
 load_dotenv()
@@ -15,8 +15,9 @@ load_dotenv()
 try:
     # Create all tables
     employee.Base.metadata.create_all(bind=engine)
-    tenant.Base.metadata.create_all(bind=engine) 
+    tenant.Base.metadata.create_all(bind=engine)
     user.Base.metadata.create_all(bind=engine)
+    global_reference_model.Base.metadata.create_all(bind=engine)
     print("✅ Database connection successful and tables created!")
 except Exception as e:
     print(f"⚠️ Database connection failed: {e}")
@@ -52,6 +53,7 @@ app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(tenants.router, prefix="/api/admin", tags=["tenant-management"])
 app.include_router(user_roles.router, prefix="/api/admin", tags=["user-role-management"])
+app.include_router(global_reference.router, prefix="/api/admin", tags=["global-reference"])
 app.include_router(employees.router, prefix="/api", tags=["employees"])
 
 @app.get("/")
