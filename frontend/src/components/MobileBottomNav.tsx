@@ -30,6 +30,7 @@ export default function MobileBottomNav({ role }: Props) {
     for (const item of section.items) merged.push(item)
   }
   const items = merged.slice(0, 5)
+  if (!items.length) return null
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t border-soft bg-white/95 backdrop-blur">
