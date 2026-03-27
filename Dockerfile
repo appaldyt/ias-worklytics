@@ -1,23 +1,8 @@
-# Multi-stage build untuk IAS Worklytics - Single Service
-# Frontend (Next.js) + Backend (FastAPI) dalam satu container
+# IAS Worklytics - Single Service Container
+# Frontend (Next.js) + Backend (FastAPI) + Nginx
 # Created by Nusas for Shadow Monarch 🖤⚔️
 
-# Stage 1: Build Frontend (Next.js)
-FROM node:18-alpine AS frontend-builder
-
-WORKDIR /app/frontend
-
-# Install dependencies
-RUN apk add --no-cache libc6-compat
-COPY frontend/package*.json ./
-RUN npm ci
-
-# Build Next.js
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Setup Backend + Frontend
-FROM python:3.11-slim AS production
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -29,9 +14,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     nginx \
     supervisor \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy and install Python dependencies (Backend)
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r backend/requirements.txt
@@ -39,34 +26,29 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 # Copy backend application
 COPY backend/ ./backend/
 
-# Copy built frontend from previous stage
-COPY --from=frontend-builder /app/frontend/.next/standalone ./frontend/
-COPY --from=frontend-builder /app/frontend/.next/static ./frontend/.next/static
-COPY --from=frontend-builder /app/frontend/public ./frontend/public
+# Copy and build frontend
+COPY frontend/ ./frontend/
+WORKDIR /app/frontend
+RUN npm ci
+RUN npm run build
 
-# Create nginx configuration
-RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+# Back to app root
+WORKDIR /app
+
+# Copy nginx and supervisor configs
 COPY nginx.conf /etc/nginx/sites-available/default
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-RUN rm -f /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-enabled/default
-
-# Create supervisor configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app
 RUN chown -R app:app /app
-RUN chown -R app:app /var/log/nginx
-RUN chown -R app:app /var/lib/nginx
 
-# Expose port 80 (nginx will handle routing)
+# Expose port 80
 EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost/api/health || exit 1
 
-# Start supervisor (manages nginx + fastapi + frontend)
-USER root
+# Start supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
