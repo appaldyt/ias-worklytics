@@ -14,9 +14,9 @@ router = APIRouter()
 def create_tenant(
     tenant_data: TenantCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("super_admin"))
 ):
-    """Create new tenant (admin only)"""
+    """Create new tenant (super admin only)"""
     
     # Check if tenant code already exists
     existing_tenant = db.query(Tenant).filter(Tenant.code == tenant_data.code.upper()).first()
@@ -47,9 +47,9 @@ def get_tenants(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("super_admin"))
 ):
-    """Get all tenants (admin only)"""
+    """Get all tenants (super admin only)"""
     tenants = db.query(Tenant).offset(skip).limit(limit).all()
     
     return [
@@ -67,9 +67,9 @@ def get_tenants(
 def get_tenant(
     tenant_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("super_admin"))
 ):
-    """Get tenant by ID (admin only)"""
+    """Get tenant by ID (super admin only)"""
     tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     
     if not tenant:
@@ -85,9 +85,9 @@ def update_tenant(
     tenant_id: int,
     tenant_update: TenantUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("super_admin"))
 ):
-    """Update tenant (admin only)"""
+    """Update tenant (super admin only)"""
     tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     
     if not tenant:
@@ -109,9 +109,9 @@ def update_tenant(
 def delete_tenant(
     tenant_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("super_admin"))
 ):
-    """Delete tenant (admin only)"""
+    """Delete tenant (super admin only)"""
     tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     
     if not tenant:
