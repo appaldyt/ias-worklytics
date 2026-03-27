@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sidebarConfig, type UserRole } from '@/components/sidebarConfig'
+import MobileBottomNav from '@/components/MobileBottomNav'
 
 type AppShellProps = {
   role: UserRole
@@ -72,9 +73,11 @@ export default function AppShell({ role, title, subtitle, children }: AppShellPr
             </div>
           </header>
 
-          <main className="p-4 md:p-6 space-y-6">{children}</main>
+          <main className="p-4 md:p-6 space-y-6 pb-24 md:pb-6">{children}</main>
         </div>
       </div>
+
+      <MobileBottomNav role={role} />
     </div>
   )
 }
