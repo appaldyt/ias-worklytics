@@ -199,50 +199,57 @@ def initialize_default_tenants(
 @router.post("/tenants/bootstrap-users")
 def bootstrap_default_users(db: Session = Depends(get_db)):
     """Create default super admin and tenant admins if not exists."""
-    tenants = db.query(Tenant).filter(Tenant.is_active == True).all()
-    if not tenants:
-        raise HTTPException(status_code=400, detail="No tenants found. Run /tenants/init-default first.")
+    try:
+        tenants = db.query(Tenant).filter(Tenant.is_active == True).all()
+        if not tenants:
+            raise HTTPException(status_code=400, detail="No tenants found. Run /tenants/init-default first.")
 
-    created = []
+        created = []
 
-    # Create global super admin
-    existing_super = db.query(User).filter(User.username == "superadmin").first()
-    if not existing_super:
-        super_admin = User(
-            username="superadmin",
-            email="superadmin@ias.co.id",
-            full_name="Super Administrator IAS Worklytics",
-            hashed_password=get_password_hash("superadmin123"),
-            tenant_id=tenants[0].id,
-            role="super_admin",
-            is_active=True,
-            is_verified=True,
-        )
-        db.add(super_admin)
-        created.append("superadmin")
-
-    # Create admin for each tenant
-    for tenant in tenants:
-        username = f"admin_{tenant.code.lower()}"
-        exists = db.query(User).filter(User.username == username, User.tenant_id == tenant.id).first()
-        if not exists:
-            admin_user = User(
-                username=username,
-                email=f"admin@{tenant.subdomain}.ias.co.id",
-                full_name=f"Administrator {tenant.name}",
-                hashed_password=get_password_hash("admin123"),
-                tenant_id=tenant.id,
-                role="admin",
+        # Create global super admin
+        existing_super = db.query(User).filter(User.username == "superadmin").first()
+        if not existing_super:
+            super_admin = User(
+                username="superadmin",
+                email="superadmin@ias.co.id",
+                full_name="Super Administrator IAS Worklytics",
+                hashed_password=get_password_hash("superadmin123"),
+                tenant_id=tenants[0].id,
+                role="super_admin",
                 is_active=True,
                 is_verified=True,
             )
-            db.add(admin_user)
-            created.append(username)
+            db.add(super_admin)
+            created.append("superadmin")
 
-    db.commit()
+        # Create admin for each tenant
+        for tenant in tenants:
+            username = f"admin_{tenant.code.lower()}"
+            exists = db.query(User).filter(User.username == username, User.tenant_id == tenant.id).first()
+            if not exists:
+                subdomain = tenant.subdomain or tenant.code.lower()
+                admin_user = User(
+                    username=username,
+                    email=f"admin@{subdomain}.ias.co.id",
+                    full_name=f"Administrator {tenant.name}",
+                    hashed_password=get_password_hash("admin123"),
+                    tenant_id=tenant.id,
+                    role="admin",
+                    is_active=True,
+                    is_verified=True,
+                )
+                db.add(admin_user)
+                created.append(username)
 
-    return {
-        "message": "Bootstrap users completed",
-        "created_users": created,
-        "total_created": len(created),
-    }
+        db.commit()
+
+        return {
+            "message": "Bootstrap users completed",
+            "created_users": created,
+            "total_created": len(created),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"bootstrap-users failed: {str(e)}")

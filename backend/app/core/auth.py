@@ -10,8 +10,8 @@ from app.core.database import get_db
 from app.models.user import User, UserSession
 from app.models.tenant import Tenant
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing (pbkdf2_sha256 avoids external bcrypt binary dependency)
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # JWT settings
 SECRET_KEY = "ias-worklytics-secret-key-change-in-production"  # Change in production!
