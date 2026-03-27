@@ -45,7 +45,17 @@ export default function LoginPage() {
         setTenants(response.data)
       } catch (err) {
         console.error('Failed to load tenants:', err)
-        setError('Gagal memuat daftar perusahaan')
+        // Fallback to hardcoded tenants if API fails
+        const fallbackTenants: Tenant[] = [
+          { id: 1, name: "PT Integrasi Aviasi Solusi (IAS)", code: "IAS", is_active: true },
+          { id: 2, name: "PT Gapura Angkasa", code: "GAPURA", is_active: true },
+          { id: 3, name: "PT IAS Support (IASS)", code: "IASS", is_active: true },
+          { id: 4, name: "PT IAS Hospitality (IASH)", code: "IASH", is_active: true },
+          { id: 5, name: "PT IAS Property (IASP)", code: "IASP", is_active: true },
+          { id: 6, name: "PT Angkasa Pura Support (APS1)", code: "APS1", is_active: true }
+        ]
+        setTenants(fallbackTenants)
+        setError('Menggunakan mode fallback - API tidak tersedia')
       }
     }
 
