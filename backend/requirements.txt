@@ -13,3 +13,8 @@ sqlalchemy==2.0.23
 pymysql==1.1.0
 alembic==1.13.1
 cryptography==46.0.6
+
+# Authentication dependencies
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6

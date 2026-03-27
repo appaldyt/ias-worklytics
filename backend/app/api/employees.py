@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import List, Optional
+from app.core.auth import get_current_user, get_current_tenant
+from app.models.user import User
+from app.models.tenant import Tenant
 from app.core.database import get_db
 from app.models.employee import Employee, Department, Workload
 from app.schemas.employee import (
@@ -15,14 +18,26 @@ router = APIRouter()
 
 # Employee endpoints
 @router.post("/employees", response_model=EmployeeResponse)
-def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
+def create_employee(
+    employee: EmployeeCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    current_tenant: Tenant = Depends(get_current_tenant)
+):
     """Membuat karyawan baru"""
-    # Check if employee_id already exists
-    db_employee = db.query(Employee).filter(Employee.employee_id == employee.employee_id).first()
+    # Check if employee_id already exists in current tenant
+    db_employee = db.query(Employee).filter(
+        Employee.employee_id == employee.employee_id,
+        Employee.tenant_id == current_tenant.id
+    ).first()
     if db_employee:
-        raise HTTPException(status_code=400, detail="Employee ID already registered")
+        raise HTTPException(status_code=400, detail="Employee ID already registered in this tenant")
     
-    db_employee = Employee(**employee.model_dump())
+    # Create employee with tenant_id
+    employee_data = employee.model_dump()
+    employee_data["tenant_id"] = current_tenant.id
+    
+    db_employee = Employee(**employee_data)
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
@@ -34,12 +49,24 @@ def get_employees(
     limit: int = Query(100, le=1000),
     department_id: Optional[int] = None,
     is_active: bool = True,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    current_tenant: Tenant = Depends(get_current_tenant)
 ):
     """Mendapatkan daftar karyawan"""
-    query = db.query(Employee).filter(Employee.is_active == is_active)
+    query = db.query(Employee).filter(
+        Employee.tenant_id == current_tenant.id,
+        Employee.is_active == is_active
+    )
     
     if department_id:
+        # Verify department belongs to current tenant
+        department = db.query(Department).filter(
+            Department.id == department_id,
+            Department.tenant_id == current_tenant.id
+        ).first()
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
         query = query.filter(Employee.department_id == department_id)
     
     employees = query.offset(skip).limit(limit).all()

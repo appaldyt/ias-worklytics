@@ -4,16 +4,19 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-from app.api import health, employees
+from app.api import health, employees, auth, tenants
 from app.core.database import engine
-from app.models import employee
+from app.models import employee, tenant, user
 
 # Load environment variables
 load_dotenv()
 
 # Create database tables (only if connection is available)
 try:
+    # Create all tables
     employee.Base.metadata.create_all(bind=engine)
+    tenant.Base.metadata.create_all(bind=engine) 
+    user.Base.metadata.create_all(bind=engine)
     print("✅ Database connection successful and tables created!")
 except Exception as e:
     print(f"⚠️ Database connection failed: {e}")
@@ -46,15 +49,30 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(health.router, prefix="/api", tags=["health"])
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+app.include_router(tenants.router, prefix="/api/admin", tags=["tenant-management"])
 app.include_router(employees.router, prefix="/api", tags=["employees"])
 
 @app.get("/")
 async def root():
     return {
-        "message": "IAS Worklytics API",
+        "message": "IAS Worklytics Multi-Tenant API",
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
-        "status": "running"
+        "status": "running",
+        "features": [
+            "Multi-tenant workload analytics",
+            "User authentication & authorization", 
+            "6 IAS Group companies support",
+            "Employee & department management",
+            "Real-time analytics dashboard"
+        ],
+        "endpoints": {
+            "auth": "/api/auth/login",
+            "tenants": "/api/auth/tenants",
+            "docs": "/docs",
+            "health": "/api/health"
+        }
     }
 
 if __name__ == "__main__":
